@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name	bidsummarize
 // @description	Analyze bid information to be more informative
-// @version	0.9.1
+// @version	1.0.0
 // @match	https://flightops.inside.ups.com/Dotnet/CrewApps/Bidding/ViewBidSummary.aspx
 // @grant	none
 // @inject-into	content
