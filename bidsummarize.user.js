@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name	bidsummarize
 // @description	Analyze bid information to be more informative
-// @version	0.9
+// @version	0.9.1
 // @match	https://flightops.inside.ups.com/Dotnet/CrewApps/Bidding/ViewBidSummary.aspx
 // @grant	none
 // @inject-into	content
@@ -23,12 +23,12 @@
 
 	let addstyle = new CSSStyleSheet;
 	addstyle.replaceSync(
-		`span.dim {color:#555}
+		`span.dim {color:gray}
 		table._bidtbl {border-collapse:collapse}
 		table._bidtbl.hide {display:none}
-		table._bidtbl tr {padding:0.25em}
-		table._bidtbl thead {font-weight:bold}
+		table._bidtbl td {padding:0.25em}
 		table._bidtbl td:nth-child(3) {white-space:nowrap}
+		table._bidtbl thead {font-weight:bold}
 		table._bidtbl tbody tr:nth-child(odd) {background-color:#ddb}
 		div._bidsummary {
 			font-size:larger;
