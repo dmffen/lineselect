@@ -32,9 +32,10 @@
 
 				let cell = head.appendChild(document.createElement('th'));
 				cell.textContent = name;
-
-				if (sorting != Sortable.NOSORT)
+				if (sorting != Sortable.NOSORT) {
 					cell.addEventListener('click', e => this.sortBy(sorting, index + 1));
+					cell.className = 'sortable';
+				}
 			});
 
 			this.body = this.table.appendChild(document.createElement('tbody'));
@@ -86,9 +87,9 @@
 		table._bidtbl td {padding:0.25em}
 		table._bidtbl td:nth-child(3) {white-space:nowrap}
 		table._bidtbl thead {font-weight:bold; white-space:nowrap; border-bottom:1px solid black; text-align:left;}
-		table._bidtbl thead th:nth-child(-n + 4)::before {content:'⇅ '}
-		table._bidtbl tbody tr:nth-child(odd) {background-color:#ddb9}
-		table._bidtbl col.sort {background-color:#aca6}
+		table._bidtbl thead th.sortable::before {content:'⇅ '}
+		table._bidtbl tbody tr:nth-child(odd) {background-color:#2022}
+		table._bidtbl col.sort {background-color:#cfff}
 		div._bidsummary {
 			font-size:larger;
 			font-weight:bold;
@@ -154,9 +155,7 @@
 				let bids = person.pop();
 				let hold = bids.find(line => !taken.has(line));
 				person.push(bids.map(line => `<span class=${taken.has(line) ? "dim" : ""}>${line}</span>`).join(' '));
-				if (hold === undefined) {
-					console.log(crewpos + ' ' + person.slice(0, 3).join() + ' underbid');
-				} else {
+				if (hold != undefined) {
 					taken.add(hold);
 					person[3] = hold;
 				}
