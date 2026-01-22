@@ -69,15 +69,13 @@
 	};
 
 	const userid = document.getElementById('FltOpsHeader1_lblGEMSID').textContent;
-	let srcdata = document.getElementById('cphBody_DisplayTextFile1_lblContent');
-	let output = document.createElement('div');
+	let anchor = document.querySelector('div[id^=cphBody_]');
+	let output = anchor.insertAdjacentElement('afterend', document.createElement('div'));
+	let srcdata = document.querySelector('pre');
 	output.id = '_bidsummarize_output';
 	let dowork = output.appendChild(document.createElement('button'));
 	dowork.textContent = 'Summarize';
 	dowork.type = 'button';
-
-	let bigdiv = document.getElementById('cphBody_pnlDisplayTextFile');
-	bigdiv.parentNode.insertBefore(output, bigdiv);
 
 	let addstyle = new CSSStyleSheet;
 	addstyle.replaceSync(
