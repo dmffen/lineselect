@@ -25,7 +25,7 @@
 			this.data = [];
 			this.sortkey = undefined;
 			let group = this.table.appendChild(document.createElement('colgroup'));
-			let head = this.table.appendChild(document.createElement('thead'));
+			let head = this.table.createTHead();
 
 			coldef.forEach(([name, sorting = Sortable.NUMERIC], index) => {
 				group.appendChild(document.createElement('col')).setAttribute('name', name);
@@ -69,10 +69,11 @@
 	};
 
 	const userid = document.getElementById('FltOpsHeader1_lblGEMSID').textContent;
+	const srcdata = document.querySelector('pre');
 	let anchor = document.querySelector('div[id^=cphBody_]');
 	let output = anchor.insertAdjacentElement('afterend', document.createElement('div'));
-	let srcdata = document.querySelector('pre');
-	output.id = '_bidsummarize_output';
+	output.id = '_bidsummarize';
+	output.className="_bidinfo";
 	let dowork = output.appendChild(document.createElement('button'));
 	dowork.textContent = 'Summarize';
 	dowork.type = 'button';
@@ -81,7 +82,7 @@
 	addstyle.replaceSync(
 		`span.dim {color:gray}
 		table._bidtbl {border-collapse:collapse; display:block; overflow:hidden; transition:max-height 0.5s;}
-		table._bidtbl td {padding:0.25em}
+		table._bidtbl td, table._bidtbl th {padding:0.3em}
 		table._bidtbl td:nth-child(3) {white-space:nowrap}
 		table._bidtbl thead {font-weight:bold; white-space:nowrap; border-bottom:1px solid black; text-align:left;}
 		table._bidtbl thead th.sortable::before {content:'⇅ '}
@@ -108,13 +109,13 @@
 		let prepared, pages, previous, show;
 		const re1 = /^ONLY PILOTS WITH BIDS ON FILE AS OF (..\/..\/.. AT ..:..Z)/;
 		const re2 = /^NAME\s.*(SCHEDULE|SYSTEM) BIDS.*Page\s+(\d+)/;
-		// groups:    1 name                   2 emp.  3 sen.  4 base                5 A/C.  6 pos.       7 bidlist
+		// groups:    1 name                   2 emp.  3 sen.  4 base                5 A/C.  6 pos.        7 bidlist
 		const re3 = /^([A-Z][\w-',. ]+[A-Z])\s+(\d+)\s+(\d+)\s+(ANC|MIA|ONT|SDFZ?)\s+(\w+)\s+(CPT|F\/?O)\s+([\d ]+)/;
 		const re4 = /^[\d ]+$/;
 
 		while (lines.length) {
 			let line = lines.shift();
-			let found;
+			let found, list;
 			if (found = line.match(/^\s*$/)) {
 				continue;
 			} else if (found = line.match(re1)) {
@@ -124,17 +125,13 @@
 				pages = found[2];
 			} else if (found = line.replace('/', '').match(re3)) {
 				let crewpos = found.slice(4, 7).join('_');
-				let bidlist = found[7].split(/\s+/).map(n => Number.parseInt(n));
-				let list;
-				if (people.has(crewpos)) {
-					list = people.get(crewpos);
-				} else {
-					people.set(crewpos, list = []);
-				}
-				// person: 0 sen.    1 emp.    2 name.   3 hold 4 bids
-				list.push([Number.parseInt(found[3]), Number.parseInt(found[2]), found[1], -1,    bidlist]);
+				let [sen, emp, ...bidlist] = [found[3], found[2], ...found[7]
+					.split(/\s+/)].map(n => Number.parseInt(n));
+				(list = people.get(crewpos)) ?? people.set(crewpos, list = []);
+				// person:0 sen 1 emp 2 name  3 hold 4 bids
+				list.push([sen, emp, found[1], -1,  bidlist]);
 				previous = bidlist;
-				if (found[2]==userid) show=crewpos;
+				if (found[2] == userid) show = crewpos;
 			} else if (found = line.match(re4)) {
 				Array.prototype.push.apply(previous, found[0].split(/\s+/).map(n => Number.parseInt(n)));
 			} else {
@@ -156,7 +153,6 @@
 			})
 		});
 
-		output.className="_bidinfo";
 		output.textContent = 'Tap/click a bid group to expand/collapse. Tap column headings to sort a table.';
 
 		Array.from(people.keys()).sort().forEach(crewpos => {
@@ -179,9 +175,9 @@
 		let caption = document.createElement('div');
 		caption.className = '_bidinfo';
 		caption.innerHTML =
-`Note: This summary doesn't know what bid numbers are valid or how many people
-have not bid.<br>A "Hold" number of -1 means that person underbid.<br>Read ${pages}
-pages of bids dated "${prepared}" in ${Date.now() - start}ms`;
+`Note: This summary has no information about: the range of valid bid numbers, which round of
+bidding (if any) is open, or how many people have not yet bid.<br>A "Hold" value of -1 means that
+person underbid.<br>Read ${pages} pages of bids dated "${prepared}" in ${Date.now() - start}ms`;
 		output.appendChild(caption);
 	};
 })();
