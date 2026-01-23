@@ -80,8 +80,7 @@
 	let addstyle = new CSSStyleSheet;
 	addstyle.replaceSync(
 		`span.dim {color:gray}
-		table._bidtbl {border-collapse:collapse}
-		table._bidtbl.hide {display:none}
+		table._bidtbl {border-collapse:collapse; display:block; overflow:hidden; transition:max-height 0.5s;}
 		table._bidtbl td {padding:0.25em}
 		table._bidtbl td:nth-child(3) {white-space:nowrap}
 		table._bidtbl thead {font-weight:bold; white-space:nowrap; border-bottom:1px solid black; text-align:left;}
@@ -91,19 +90,16 @@
 		div._bidsummary {
 			font-size:larger;
 			font-weight:bold;
+			line-height:1.5;
 			padding:0.25em;
 			margin:0.5em 0;
 			background-color:#ddd;
 		}
 		div._bidsummary::before {content:'▼ '}
-		div._bidsummary.hide::before {content:'▷ '}`
+		div._bidsummary.hide::before {content:'▷ '}
+		div._bidsummary.hide + table._bidtbl {max-height:0 !important}`
 	);
 	document.adoptedStyleSheets.push(addstyle);
-
-	function tbl_toggle(hdr, tbl) {
-		hdr.classList.toggle('hide');
-		tbl.classList.toggle('hide');
-	}
 
 	dowork.onclick = () => {
 		const start = Date.now();
@@ -164,20 +160,20 @@
 		output.textContent = 'Tap/click a bid group to expand/collapse. Tap column headings to sort a table.';
 
 		Array.from(people.keys()).sort().forEach(crewpos => {
-			let hideclass = ((show==crewpos)?'':' hide');
 			let sorter = new Sortable(['Sen'],['Emp'],['Name',Sortable.STRING],['Hold'],['Bids',Sortable.NOSORT]);
 			sorter.table.id = 'bid_' + crewpos;
-			sorter.table.className = '_bidtbl' + hideclass;
+			sorter.table.className = '_bidtbl';
 			sorter.addData(people.get(crewpos));
 			sorter.sortBy(Sortable.NUMERIC, 1);
 
 			let caption = document.createElement('div');
-			caption.className = '_bidsummary' + hideclass;
+			caption.className = '_bidsummary' + ((show==crewpos)?'':' hide');
 			caption.textContent = crewpos;
-			caption.onclick = () => tbl_toggle(caption, sorter.table);
+			caption.onclick = () => caption.classList.toggle('hide');
 
 			output.appendChild(caption);
 			output.appendChild(sorter.table);
+			sorter.table.style.maxHeight = Math.round(sorter.table.scrollHeight * 1.1);
 		});
 
 		let caption = document.createElement('div');
