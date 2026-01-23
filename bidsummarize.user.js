@@ -81,24 +81,20 @@
 	let addstyle = new CSSStyleSheet;
 	addstyle.replaceSync(
 		`span.dim {color:gray}
-		table._bidtbl {border-collapse:collapse; display:block; overflow:hidden; transition:max-height 0.5s;}
-		table._bidtbl td, table._bidtbl th {padding:0.3em}
+		table._bidtbl {border-collapse:collapse; min-height:0;}
+		table._bidtbl td, table._bidtbl th {padding:0.3em; overflow-x:scroll;}
 		table._bidtbl td:nth-child(3) {white-space:nowrap}
 		table._bidtbl thead {font-weight:bold; white-space:nowrap; border-bottom:1px solid black; text-align:left;}
 		table._bidtbl thead th.sortable::before {content:'⇅ '}
 		table._bidtbl tbody tr:nth-child(odd) {background-color:#2022}
-		table._bidtbl col.sort {background-color:#cfff}
-		div._bidsummary {
-			font-size:larger;
-			font-weight:bold;
-			line-height:1.5;
-			padding:0.25em;
-			margin:0.5em 0;
-			background-color:#ddd;
-		}
-		div._bidsummary::before {content:'▼ '}
-		div._bidsummary.hide::before {content:'▷ '}
-		div._bidsummary.hide + table._bidtbl {max-height:0 !important}`
+		table._bidtbl col.sort {background-color:#ffdf}
+		div._wrapper {max-width:100vw}
+		div._bidsummary {font-size:larger; font-weight:bold; line-height:1.5; margin:0.3em 0; background-color:#ddd;}
+		div._bidsummary::before {content:'▷ '}
+		div._bidsummary + div._wrapper {display:grid; overflow:hidden; transition:grid-template-rows 400ms; grid-template-rows:0fr;}
+		div._bidsummary.show::before {content:'▼ '}
+		div._bidsummary.show + div._wrapper {grid-template-rows:1fr}
+		div.scroll table._bidtbl td {white-space:nowrap; max-width:500;}`
 	);
 	document.adoptedStyleSheets.push(addstyle);
 
@@ -128,8 +124,8 @@
 				let [sen, emp, ...bidlist] = [found[3], found[2], ...found[7]
 					.split(/\s+/)].map(n => Number.parseInt(n));
 				(list = people.get(crewpos)) ?? people.set(crewpos, list = []);
-				// person:0 sen 1 emp 2 name  3 hold 4 bids
-				list.push([sen, emp, found[1], -1,  bidlist]);
+				// person:0 sen 1 emp 2 name 3 hold 4 bids
+				list.push([sen, emp, found[1], -1, bidlist]);
 				previous = bidlist;
 				if (found[2] == userid) show = crewpos;
 			} else if (found = line.match(re4)) {
@@ -163,13 +159,16 @@
 			sorter.sortBy(Sortable.NUMERIC, 1);
 
 			let caption = document.createElement('div');
-			caption.className = '_bidsummary' + ((show==crewpos)?'':' hide');
+			caption.className = '_bidsummary' + ((show==crewpos)?' show':'');
 			caption.textContent = crewpos;
-			caption.onclick = () => caption.classList.toggle('hide');
+			caption.onclick = () => caption.classList.toggle('show');
+
+			let wrapper = document.createElement('div');
+			wrapper.className = '_wrapper';
 
 			output.appendChild(caption);
-			output.appendChild(sorter.table);
-			sorter.table.style.maxHeight = Math.round(sorter.table.scrollHeight * 1.1);
+			output.appendChild(wrapper);
+			wrapper.appendChild(sorter.table);
 		});
 
 		let caption = document.createElement('div');
